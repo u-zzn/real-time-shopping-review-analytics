@@ -357,17 +357,6 @@ real-time-shopping-review-analytics/
 
 ---
 
-# 📚 References
-
-- Apache Hadoop Documentation
-- Apache Spark Documentation
-- Apache Hive Documentation
-- Apache Kafka Documentation
-- Kaggle Dataset
-- Amazon Review Dataset
-
----
-
 # 👨‍💻 Author
 
 | Name | University | Major |
