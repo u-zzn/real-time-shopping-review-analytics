@@ -84,7 +84,6 @@
 - Positive Review 비율 분석
 - 카테고리별 선호도 분석
 
----
 
 ### 2️⃣ 리뷰 트렌드는 시간에 따라 어떻게 변화하는가?
 
@@ -92,7 +91,6 @@
 - 시즌별 소비 패턴 분석
 - 인기 상품 변화 분석
 
----
 
 ### 3️⃣ 어떤 키워드가 자주 등장하는가?
 
@@ -100,7 +98,6 @@
 - 상품별 핵심 키워드 추출
 - 감성 키워드 분석
 
----
 
 ### 4️⃣ 실시간 데이터 처리 구조는 어떻게 설계할 수 있는가?
 
@@ -141,7 +138,6 @@ K --> D
 
 본 프로젝트에서는 아래와 같은 기술 스택을 사용합니다.
 
----
 
 ## ☁️ Cloud & Environment
 
@@ -151,7 +147,6 @@ K --> D
 | Ubuntu | Linux Environment |
 | Docker | Container Environment |
 
----
 
 ## 🗄️ Big Data Ecosystem
 
@@ -178,7 +173,6 @@ K --> D
 - Kaggle E-commerce Review Dataset
 - Public Shopping Review APIs
 
----
 
 ## Expected Data Size
 
@@ -202,7 +196,6 @@ Python Crawling 및 API 기반 데이터 수집을 수행합니다.
 - JSON / CSV 변환
 - 자동 수집 스크립트 구성
 
----
 
 ## 2️⃣ HDFS Storage
 
@@ -214,7 +207,6 @@ Python Crawling 및 API 기반 데이터 수집을 수행합니다.
 - 데이터 분산 저장
 - Partition 기반 데이터 관리
 
----
 
 ## 3️⃣ Spark Preprocessing
 
@@ -228,7 +220,6 @@ Spark 기반 데이터 전처리를 수행합니다.
 - Rating Filtering
 - Tokenization
 
----
 
 ## 4️⃣ Hive Analytics
 
@@ -245,7 +236,6 @@ GROUP BY category
 ORDER BY avg_rating DESC;
 ```
 
----
 
 ## 5️⃣ Sentiment Analysis
 
@@ -257,7 +247,6 @@ ORDER BY avg_rating DESC;
 - Sentiment Score
 - Keyword-based Sentiment Analysis
 
----
 
 ## 6️⃣ Streaming Architecture
 
@@ -269,7 +258,6 @@ Kafka 기반 실시간 데이터 처리 구조를 설계합니다.
 - Streaming Pipeline
 - Event Queue Management
 
----
 
 ## 7️⃣ Visualization Dashboard
 
