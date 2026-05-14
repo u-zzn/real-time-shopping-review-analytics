@@ -320,7 +320,7 @@ real-time-shopping-review-analytics/
 
 ---
 
-# 🔥 Bonus Point Features
+# 🔥 Bonus Features
 
 본 프로젝트에서는 다음 기능들을 추가로 설계합니다.
 
