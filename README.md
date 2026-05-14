@@ -6,7 +6,7 @@
 
 <br>
 
-[![Hadoop](https://img.shields.io/badge/Hadoop-BigData-yellow?style=for-the-badge&logo=apachehadoop)]
+![Hadoop](https://img.shields.io/badge/Hadoop-BigData-yellow?style=for-the-badge&logo=apachehadoop)
 [![Spark](https://img.shields.io/badge/Apache-Spark-orange?style=for-the-badge&logo=apachespark)]
 [![Kafka](https://img.shields.io/badge/Apache-Kafka-black?style=for-the-badge&logo=apachekafka)]
 [![Hive](https://img.shields.io/badge/Apache-Hive-FDEE21?style=for-the-badge&logo=apachehive)]
