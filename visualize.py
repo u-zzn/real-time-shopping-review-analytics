@@ -3,6 +3,7 @@ analysis_results/ 폴더의 CSV 파일(spark_analysis.py 출력)을 읽어 PNG �
 CSV가 없는 경우 샘플 CSV에서 직접 계산하여 대체합니다.
 """
 
+import platform
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")  # HDP Sandbox 등 디스플레이 없는 환경을 위한 백엔드 설정
@@ -10,7 +11,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 
-matplotlib.rcParams["font.family"] = "DejaVu Sans"
+# 플랫폼별 한글 폰트 설정 (HDP Sandbox에서는 DejaVu Sans 폴백)
+_sys = platform.system()
+if _sys == "Darwin":
+    matplotlib.rcParams["font.family"] = ["AppleGothic", "DejaVu Sans"]
+elif _sys == "Linux":
+    matplotlib.rcParams["font.family"] = ["NanumGothic", "UnDotum", "DejaVu Sans"]
+else:
+    matplotlib.rcParams["font.family"] = ["Malgun Gothic", "DejaVu Sans"]
 matplotlib.rcParams["axes.unicode_minus"] = False
 sns.set_theme(style="whitegrid", rc={"axes.unicode_minus": False})
 
@@ -179,7 +187,10 @@ def _heatmap_fb():
 heat_long = load("analysis_category_language_heatmap.csv", _heatmap_fb)
 
 top_cats = load("analysis_category_distribution.csv", _cat_fb)["category"].head(8).tolist()
-heat_filtered = heat_long[heat_long["category"].isin(top_cats)]
+heat_filtered = heat_long[
+    heat_long["category"].isin(top_cats) &
+    heat_long["language"].astype(str).str.match(r'^[a-z]{2}$')
+]
 
 pivot = heat_filtered.pivot_table(
     index="category", columns="language", values="avg_rating", aggfunc="mean"

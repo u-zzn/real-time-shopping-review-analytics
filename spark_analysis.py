@@ -119,6 +119,7 @@ def run_sql_analyses(spark, df):
                 ROUND(AVG(CAST(rating AS DOUBLE)), 2) AS avg_rating,
                 COUNT(*) AS review_count
             FROM reviews
+            WHERE language RLIKE '^[a-z]{2}$'
             GROUP BY category, language
             HAVING COUNT(*) >= 3
             ORDER BY category, language
@@ -202,7 +203,7 @@ def run_ml(spark, df):
     metrics.to_csv(f"{OUTPUT_DIR}/analysis_model_metrics.csv", index=False)
 
     lr_model = model.stages[-1]
-    feature_names = ["카테고리(인덱스)", "언어(인덱스)", "리뷰 길이"]
+    feature_names = ["Category (Index)", "Language (Index)", "Review Length"]
     coef_df = pd.DataFrame({
         "feature":     feature_names,
         "coefficient": list(lr_model.coefficients),
