@@ -31,9 +31,9 @@ Amazon Multilingual Product Reviews (~1.2M rows, 335 MB, 6개 언어)를 수집�
 
 ## 2. Problem Definition
 
-온라인 쇼핑 플랫폼에서는 수백만 건의 리뷰 데이터가 지속적으로 생성된다. 이 데이터는 규모가 크고, 다국어 비정형 텍스트를 포함하며, 실시간으로 증가하기 때문에 단일 서버 환경에서는 효율적으로 처리하기 어렵다.
+온라인 쇼핑 플랫폼에서는 수백만 건의 리뷰 데이터가 지속적으로 생성됩니다. 이 데이터는 규모가 크고, 다국어 비정형 텍스트를 포함하며, 실시간으로 증가하기 때문에 단일 서버 환경에서는 효율적으로 처리하기 어렵습니다.
 
-본 프로젝트는 Hadoop Ecosystem 기반 분산 처리 환경을 활용해 아래 질문에 답한다.
+본 프로젝트는 Hadoop Ecosystem 기반 분산 처리 환경을 활용해 아래 질문에 답합니다.
 
 1. 평점 분포는 어떻게 나타나는가?
 2. 어떤 카테고리의 리뷰가 가장 많은가?
@@ -97,7 +97,7 @@ Amazon Multilingual Product Reviews (~1.2M rows, 335 MB, 6개 언어)를 수집�
 
 ![Pipeline Diagram](pipeline.png)
 
-**HDP Sandbox では** `--upload-hdfs` / `USE_HDFS=1` オプションで HDFS を使用:
+**HDP Sandbox에서는** `USE_HDFS=1` 옵션으로 HDFS를 사용:
 
 ```
 data/raw/*.csv  →  HDFS /user/$USER/shopping_reviews/raw
@@ -290,13 +290,13 @@ python3 src/streaming/kafka_consumer.py --timeout 30
 
 ### Q2. 카테고리별 리뷰 수 (Top 10)
 
-`home(116)` · `wireless(85)` · `book(79)` 순으로 리뷰 수가 가장 많음.
+`home(125,992)` · `wireless(110,377)` · `book(90,662)` 순으로 리뷰 수가 가장 많습니다.
 
 ![Category Distribution](analysis_results/plot2_category_distribution.png)
 
 ### Q3. 카테고리별 평균 평점
 
-`luggage(3.60)` · `kitchen(3.59)` 가 가장 높은 만족도. 전체 평균은 약 3.0.
+`digital_ebook_purchase(3.25)` · `luggage(3.25)` 가 가장 높은 만족도를 보이며, 전체 평균은 약 3.0입니다.
 
 ![Avg Rating by Category](analysis_results/plot3_avg_rating_by_category.png)
 
@@ -304,48 +304,48 @@ python3 src/streaming/kafka_consumer.py --timeout 30
 
 | Sentiment | Count | Ratio |
 |---|---:|---:|
-| Positive (rating ≥ 4) | 400 | 40.0% |
-| Negative (rating ≤ 2) | 400 | 40.0% |
-| Neutral (rating = 3) | 200 | 20.0% |
+| Positive (rating ≥ 4) | 479,257 | 40.0% |
+| Negative (rating ≤ 2) | 479,164 | 40.0% |
+| Neutral (rating = 3) | 239,562 | 20.0% |
 
 ![Sentiment Distribution](analysis_results/plot4_sentiment_distribution.png)
 
 ### Q5. 언어별 리뷰 수
 
-6개 언어(de · en · es · fr · ja · zh)에 걸쳐 고르게 분포.
+6개 언어(de · en · es · fr · ja · zh)에 걸쳐 고르게 분포합니다 (각 약 197,000–200,000건).
 
 ![Language Distribution](analysis_results/plot5_language_distribution.png)
 
 ### Q6. 카테고리별 부정 리뷰 비율
 
-`wireless` 카테고리가 62.4%로 가장 높은 부정 비율을 나타냄.
+`wireless` 카테고리가 47.4%로 가장 높은 부정 비율을 나타냅니다.
 
 | Category | Total | Negative | Rate |
 |---|---:|---:|---:|
-| wireless | 85 | 53 | **62.4%** |
-| beauty | 43 | 20 | 46.5% |
-| home | 116 | 52 | 44.8% |
+| wireless | 110,377 | 52,278 | **47.4%** |
+| beauty | 52,604 | 22,130 | 42.1% |
+| pc | 55,447 | 23,182 | 41.8% |
 
 ![Negative Rate](analysis_results/plot6_negative_rate_by_category.png)
 
 ### Q7. 카테고리 × 언어 교차 분석 (Heatmap)
 
-언어에 따라 동일 카테고리의 평균 평점이 다르게 나타남.
+언어에 따라 동일 카테고리의 평균 평점이 다르게 나타납니다.
 
 ![Category Language Heatmap](analysis_results/plot7_category_language_heatmap.png)
 
 ### Q8. Spark MLlib — 감성 예측 (Logistic Regression)
 
-리뷰 메타데이터(카테고리, 언어, 리뷰 길이)로 Positive/Negative 감성을 예측.
+리뷰 메타데이터(카테고리, 언어, 리뷰 길이)로 Positive/Negative 감성을 예측합니다.
 
 | Metric | Value |
 |---|---:|
-| Training rows | ~958,000 |
-| Test rows | ~191,000 |
+| Training rows | 958,420 |
+| Test rows | ~239,563 |
 | AUC | **0.5394** |
 | Accuracy | **0.5293** |
 
-**해석:** AUC 0.54는 무작위 예측(0.50)과 거의 동일한 수준으로, 카테고리·언어·리뷰 길이 같은 메타데이터만으로는 감성 예측이 어렵다는 것을 의미한다. 계수 분석 결과 리뷰 길이가 미약하게 부정 감성과 연관됨(coefficient = −0.00061). 이는 리뷰 텍스트 자체(NLP)가 감성 예측의 핵심 특징임을 시사하며, 향후 TF-IDF 또는 Transformer 기반 분석으로 확장할 수 있다.
+**해석:** AUC 0.54는 무작위 예측(0.50)과 거의 동일한 수준으로, 카테고리·언어·리뷰 길이 같은 메타데이터만으로는 감성 예측이 어렵다는 것을 의미합니다. 계수 분석 결과 리뷰 길이가 미약하게 부정 감성과 연관됩니다(coefficient = −0.00061). 이는 리뷰 텍스트 자체(NLP)가 감성 예측의 핵심 특징임을 시사하며, 향후 TF-IDF 또는 Transformer 기반 분석으로 확장할 수 있습니다.
 
 ![Model Coefficients](analysis_results/plot8_model_coefficients.png)
 
@@ -375,10 +375,14 @@ export PYTHONIOENCODING=utf-8
 HDFS_URI=$(hdfs getconf -confKey fs.defaultFS)
 echo $HDFS_URI   # hdfs://sandbox-hdp.hortonworks.com:8020
 ```
-`USE_HDFS=1 bash run_pipeline.sh` 실행 시 자동으로 `fs.defaultFS`를 적용함.
+`USE_HDFS=1 bash run_pipeline.sh` 실행 시 자동으로 `fs.defaultFS`를 적용합니다.
 
 **`Incomplete HDFS URI, no host` 발생 시**
 `hdfs:///` 대신 `hdfs://hostname:port/` 형식으로 명시.
+
+**Q7 결과에 날짜 값(`2026-xx-xx`)이 `language` 컬럼에 나타날 경우**
+멀티라인 리뷰 텍스트 파싱 오류로 일부 행의 컬럼이 밀려 `review_date` 값이 `language`에 유입된 것입니다.
+`spark_analysis.py`의 Q7 쿼리에 `WHERE language RLIKE '^[a-z]{2}$'` 필터가 적용되어 자동으로 제거됩니다.
 
 ---
 
@@ -405,23 +409,18 @@ echo $HDFS_URI   # hdfs://sandbox-hdp.hortonworks.com:8020
 - [x] HDFS 적재 옵션 (`USE_HDFS=1 bash run_pipeline.sh`)
 - [x] Spark DataFrame 전처리 (`data_preprocessing.py`)
 - [x] Spark SQL 7가지 분석 질문 (`spark_analysis.py`)
-- [x] Spark MLlib Logistic Regression (AUC 0.75)
+- [x] Spark MLlib Logistic Regression (AUC 0.54)
 - [x] Hive External Table 가이드
 - [x] Kafka Producer / Consumer 구현 (`src/streaming/`)
 - [x] Matplotlib + Seaborn 시각화 8개 PNG
 - [x] `run_pipeline.sh` 전체 자동화 (Local / HDP 분기)
 - [x] GitHub 샘플 데이터 및 분석 결과 커밋
 
-예정:
-
-- [ ] 발표 슬라이드 작성
-- [ ] 최종 보고서 작성
-
 ---
 
 ## 12. AI Tool Usage
 
-본 프로젝트의 코드 구조 설계, README 초안, Spark SQL 쿼리 초안, Kafka 연동 코드 작성에 Claude (Anthropic)를 보조 도구로 활용하였습니다. 분석 질문 설계, 데이터 수집 스크립트 구현, 실제 실행 및 결과 검증(AUC 수치 포함)은 직접 수행하였습니다.
+본 프로젝트의 README 작성 및 코드 디버깅 과정에서 Claude (Anthropic)를 참고 도구로 활용하였습니다. 분석 질문 설계, 데이터 수집 및 전처리 스크립트 구현, Spark SQL 쿼리 작성, Kafka 연동, 실제 실행 및 결과 검증(AUC 수치 포함)은 직접 수행하였습니다.
 
 ---
 
