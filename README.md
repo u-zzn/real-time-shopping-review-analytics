@@ -1,374 +1,442 @@
 <div align="center">
 
-# 🛒 Real-Time Shopping Review Analytics Platform
+# Real-Time Shopping Review Analytics Platform
 
-> Distributed Big Data Processing System for Large-Scale E-Commerce Review Analysis
+**Myongji University — Big Data Programming Final Project (2026)**
 
-<br>
-
-![Hadoop](https://img.shields.io/badge/Hadoop-BigData-yellow?style=for-the-badge&logo=apachehadoop)
-![Spark](https://img.shields.io/badge/Apache-Spark-orange?style=for-the-badge&logo=apachespark)
-![Kafka](https://img.shields.io/badge/Apache-Kafka-black?style=for-the-badge&logo=apachekafka)
-![Hive](https://img.shields.io/badge/Apache-Hive-FDEE21?style=for-the-badge&logo=apachehive)
-![HDFS](https://img.shields.io/badge/HDFS-DistributedStorage-blue?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-DataProcessing-green?style=for-the-badge&logo=python)
-
-<br>
-
-### 2026 Big Data Programming Final Project
+![Spark](https://img.shields.io/badge/Apache%20Spark-3.x-orange?logo=apachespark&logoColor=white)
+![HDFS](https://img.shields.io/badge/HDFS-Distributed%20Storage-blue)
+![Hive](https://img.shields.io/badge/Apache%20Hive-SQL%20Analytics-FDEE21?logo=apachehive&logoColor=black)
+![Kafka](https://img.shields.io/badge/Apache%20Kafka-Streaming-black?logo=apachekafka)
+![Python](https://img.shields.io/badge/Python-3.6%2B-green?logo=python&logoColor=white)
 
 </div>
 
 ---
 
-# 📌 Project Overview
+## 1. Project Overview
 
-본 프로젝트는 Hadoop Ecosystem 기반의 Distributed Big Data Analytics Platform을 구축하고, 대규모 온라인 쇼핑 리뷰 데이터를 수집, 저장, 처리, 분석하기 위한 End-to-End Data Processing Pipeline을 구현하는 것을 목표로 합니다.
+Amazon Multilingual Product Reviews (~1.2M rows, 335 MB, 6개 언어)를 수집·저장·분석하는 End-to-End 빅데이터 파이프라인입니다.
 
-특히 Hadoop, Spark, Hive, Kafka 등의 기술을 활용하여:
+- **HDFS** 기반 분산 저장
+- **Apache Spark DataFrame** 기반 전처리
+- **Spark SQL** 기반 7가지 분석 질문 답변
+- **Spark MLlib** Logistic Regression으로 리뷰 감성 예측 (AUC 0.54)
+- **Kafka** 기반 실시간 리뷰 스트리밍 구현
+- `run_pipeline.sh` 단일 실행으로 전체 파이프라인 재현 가능
 
-- 대규모 리뷰 데이터 분석
-- 소비자 행동 패턴 분석
-- Sentiment Analysis
-- 실시간 데이터 처리 구조 설계
-
-를 수행합니다.
-
----
-
-# 🎯 Project Goals
-
-본 프로젝트의 주요 목표는 다음과 같습니다.
-
-- Hadoop 기반 Distributed Storage Environment 구축
-- 대규모 리뷰 데이터 처리
-- Spark 기반 Distributed Processing 학습
-- Hive 기반 SQL Analytics 수행
-- Kafka 기반 Streaming Architecture 설계
-- 실시간 데이터 분석 구조 이해
-- Visualization Dashboard 구현
+**핵심 컴포넌트:** HDFS · Apache Spark (DataFrame / SQL / MLlib) · Apache Hive · Apache Kafka
 
 ---
 
-# 🧠 Problem Definition
+## 2. Problem Definition
 
-현대 E-commerce 플랫폼에서는 대규모 리뷰 데이터가 지속적으로 생성됩니다.
+온라인 쇼핑 플랫폼에서는 수백만 건의 리뷰 데이터가 지속적으로 생성된다. 이 데이터는 규모가 크고, 다국어 비정형 텍스트를 포함하며, 실시간으로 증가하기 때문에 단일 서버 환경에서는 효율적으로 처리하기 어렵다.
 
-하지만 이러한 데이터는:
+본 프로젝트는 Hadoop Ecosystem 기반 분산 처리 환경을 활용해 아래 질문에 답한다.
 
-- 데이터 양이 매우 크고,
-- 비정형 텍스트가 포함되며,
-- 실시간으로 계속 증가하기 때문에
-
-기존 단일 시스템 환경에서는 효율적으로 처리하기 어렵습니다.
-
-본 프로젝트에서는 Hadoop Ecosystem 기반 분산 처리 환경을 활용하여:
-
-- 리뷰 데이터 저장
-- 데이터 전처리
-- 감성 분석
-- 트렌드 분석
-- 실시간 데이터 처리 구조
-
-를 구현하고자 합니다.
+1. 평점 분포는 어떻게 나타나는가?
+2. 어떤 카테고리의 리뷰가 가장 많은가?
+3. 카테고리별 평균 평점은 어떻게 다른가?
+4. 리뷰의 감성(긍정/부정/중립) 비율은?
+5. 언어별 리뷰 수는 어떻게 분포하는가?
+6. 어떤 카테고리가 부정 리뷰 비율이 가장 높은가?
+7. 카테고리와 언어의 교차 분석에서 어떤 패턴이 보이는가?
+8. **(ML)** 리뷰 메타데이터(카테고리, 언어, 리뷰 길이)로 감성을 예측할 수 있는가?
 
 ---
 
-# ❓ Research Questions
+## 3. Dataset
 
-본 프로젝트에서는 다음과 같은 분석 문제를 해결하고자 합니다.
+| 항목 | 내용 |
+|---|---|
+| 출처 | Amazon Multilingual Product Reviews |
+| 전체 행 수 | ~1,200,000 |
+| 원본 크기 | ~335 MB (24 part files) |
+| 언어 | German · English · Spanish · French · Japanese · Chinese |
+| 평점 | 1–5 (균등 분포, 각 약 240,000건) |
+| GitHub 커밋 | 샘플 1,000행만 (`data/sample/`) |
 
-### 1️⃣ 어떤 상품 카테고리가 가장 높은 만족도를 가지는가?
+**Schema:** `review_id` · `product_id` · `category` · `rating` · `review_text` · `review_title` · `review_date` · `user_id` · `language`
 
-- 평균 평점 분석
-- Positive Review 비율 분석
-- 카테고리별 선호도 분석
-
-
-### 2️⃣ 리뷰 트렌드는 시간에 따라 어떻게 변화하는가?
-
-- 월별 리뷰 변화
-- 시즌별 소비 패턴 분석
-- 인기 상품 변화 분석
-
-
-### 3️⃣ 어떤 키워드가 자주 등장하는가?
-
-- Frequent Keyword Analysis
-- 상품별 핵심 키워드 추출
-- 감성 키워드 분석
-
-
-### 4️⃣ 실시간 데이터 처리 구조는 어떻게 설계할 수 있는가?
-
-- Kafka 기반 Streaming 구조 설계
-- Spark Streaming Architecture 구성
-- 실시간 이벤트 처리 파이프라인 설계
+> 원본 데이터 재생성 방법: [data/README.md](data/README.md) 참조
 
 ---
 
-# 🏗️ System Architecture
+## 4. Technology Stack
 
-```mermaid
-flowchart LR
+| 컴포넌트 | 역할 |
+|---|---|
+| **HDFS** | 분산 저장 — raw / cleaned 데이터 적재 |
+| **Apache Spark DataFrame** | 전처리 — 타입 변환, 파생 변수 생성 (`data_preprocessing.py`) |
+| **Apache Spark SQL** | 분석 — 7가지 SQL 쿼리 (`spark_analysis.py`) |
+| **Spark MLlib** | 감성 예측 — Logistic Regression Pipeline |
+| **Apache Hive** | SQL 분석 테이블 (`CREATE EXTERNAL TABLE` 가이드 포함) |
+| **Apache Kafka** | 실시간 리뷰 스트리밍 (`src/streaming/`) |
+| **Python / pandas** | 데이터 수집 · 정제 (`src/ingest/collect_reviews.py`) |
+| **Matplotlib / Seaborn** | 8개 분석 결과 시각화 |
 
-A[Review Collection Scripts] --> B[Raw JSON/CSV Data]
-B --> C[HDFS Storage]
+---
 
-C --> D[Spark Preprocessing]
-C --> E[Hive SQL Analytics]
+## 5. Data Pipeline
 
-D --> F[Cleaned Review Dataset]
+```
+[1] collect_reviews.py          Python / pandas
+        ↓  data/raw/*.csv  (335 MB, gitignored)
+[2] data_preprocessing.py       Spark DataFrame
+        ↓  data/cleaned/*.csv   (derived columns, gitignored)
+[3] spark_analysis.py           Spark SQL + MLlib
+        ↓  analysis_results/*.csv
+[4] visualize.py                Matplotlib + Seaborn
+        ↓  analysis_results/*.png  (8 plots)
 
-F --> G[Sentiment Analysis]
-F --> H[Trend Analysis]
-F --> I[Keyword Aggregation]
+[Streaming — optional]
+[5] kafka_producer.py   →  Kafka Topic: shopping-reviews
+[6] kafka_consumer.py   →  Real-time aggregation
+```
 
-G --> J[Visualization Dashboard]
-H --> J
-I --> J
+![Pipeline Diagram](pipeline.png)
 
-K[Kafka Streaming Extension]
-K --> D
+**HDP Sandbox では** `--upload-hdfs` / `USE_HDFS=1` オプションで HDFS を使用:
+
+```
+data/raw/*.csv  →  HDFS /user/$USER/shopping_reviews/raw
+                →  HDFS /user/$USER/shopping_reviews/cleaned
+                →  spark-submit (YARN)
 ```
 
 ---
 
-# ⚙️ Technology Stack
+## 6. Repository Structure
 
-본 프로젝트에서는 아래와 같은 기술 스택을 사용합니다.
-
-
-## ☁️ Cloud & Environment
-
-| Technology | Purpose |
-|---|---|
-| GCP | Cloud Infrastructure |
-| Ubuntu | Linux Environment |
-| Docker | Container Environment |
-
-
-## 🗄️ Big Data Ecosystem
-
-| Technology | Purpose |
-|---|---|
-| Hadoop | Distributed Computing |
-| HDFS | Distributed Storage |
-| Spark | Distributed Data Processing |
-| Hive | SQL-based Analytics |
-| Kafka | Streaming Architecture |
-| Python | Data Processing & Crawling |
-
----
-
-# 📂 Dataset
-
-## Data Sources
-
-본 프로젝트에서는 공개 E-commerce Review Dataset을 활용합니다.
-
-예상 데이터 출처:
-
-- Amazon Product Reviews Dataset
-- Kaggle E-commerce Review Dataset
-- Public Shopping Review APIs
-
-
-## Expected Data Size
-
-| Type | Size |
-|---|---|
-| Raw Review Data | 100MB+ |
-| CSV / JSON Files | Multiple Files |
-| Processed Data | Hive Tables / Parquet |
+```
+real-time-shopping-review-analytics/
+├── README.md
+├── config.py                          ← 경로·Kafka 설정 중앙 관리
+├── data_preprocessing.py              ← Spark DataFrame 전처리
+├── spark_analysis.py                  ← Spark SQL (Q1–Q7) + MLlib
+├── visualize.py                       ← Matplotlib + Seaborn (8 plots)
+├── run_pipeline.sh                    ← 전체 자동화 (Local / HDP)
+├── requirements.txt
+├── .gitattributes
+├── pipeline.png                       ← 아키텍처 다이어그램
+├── data/
+│   ├── README.md                      ← 스키마 및 재생성 가이드
+│   ├── sample/
+│   │   └── shopping_reviews_sample.csv  ← 1,000행 샘플 (커밋됨)
+│   ├── raw/                           ← 335 MB, 24 files (GITIGNORED)
+│   └── cleaned/                       ← Spark 전처리 출력 (GITIGNORED)
+├── src/
+│   ├── ingest/
+│   │   └── collect_reviews.py         ← 원본 CSV 정제·분할
+│   └── streaming/
+│       ├── kafka_producer.py          ← Kafka 리뷰 스트림 프로듀서
+│       └── kafka_consumer.py          ← Kafka 실시간 집계 컨슈머
+└── analysis_results/                  ← CSV + PNG
+    ├── analysis_rating_distribution.csv
+    ├── analysis_category_distribution.csv
+    ├── analysis_avg_rating_by_category.csv
+    ├── analysis_sentiment_distribution.csv
+    ├── analysis_language_distribution.csv
+    ├── analysis_negative_rate_by_category.csv
+    ├── analysis_category_language_heatmap.csv
+    ├── analysis_model_metrics.csv
+    ├── analysis_model_coefficients.csv
+    ├── plot1_rating_distribution.png
+    ├── plot2_category_distribution.png
+    ├── plot3_avg_rating_by_category.png
+    ├── plot4_sentiment_distribution.png
+    ├── plot5_language_distribution.png
+    ├── plot6_negative_rate_by_category.png
+    ├── plot7_category_language_heatmap.png
+    └── plot8_model_coefficients.png
+```
 
 ---
 
-# 🔄 Data Pipeline
+## 7. Setup & Execution
 
-## 1️⃣ Data Collection
+### 7.1 Requirements
 
-Python Crawling 및 API 기반 데이터 수집을 수행합니다.
+```bash
+pip install -r requirements.txt
+# pandas  matplotlib  seaborn  pyspark  kafka-python
+```
 
-### 주요 작업
+HDP Sandbox에서 Python 2.7이 기본인 경우:
+```bash
+python3.6 --version
+python3.6 -m pip install --user -r requirements.txt
+export PATH="$HOME/.local/bin:$PATH"
+```
 
-- 리뷰 데이터 수집
-- JSON / CSV 변환
-- 자동 수집 스크립트 구성
+### 7.2 Data Collection
 
+```bash
+python3 src/ingest/collect_reviews.py \
+    --input <source.csv> \
+    --raw-output data/raw \
+    --sample-output data/sample/shopping_reviews_sample.csv \
+    --part-size 50000
+```
 
-## 2️⃣ HDFS Storage
+### 7.3 Local Execution (Mac / Linux)
 
-수집한 데이터를 HDFS에 저장합니다.
+```bash
+# 전체 파이프라인 자동 실행
+bash run_pipeline.sh
 
-### 주요 작업
+# 단계별 실행
+python3 data_preprocessing.py --input data/raw --output data/cleaned
+python3 spark_analysis.py --input data/cleaned
+python3 visualize.py
+```
 
-- Distributed File Storage
-- 데이터 분산 저장
-- Partition 기반 데이터 관리
+### 7.4 HDP Sandbox Execution
 
+```bash
+# ① HDFS 업로드 + 전체 파이프라인
+USE_HDFS=1 bash run_pipeline.sh
 
-## 3️⃣ Spark Preprocessing
+# ② Python 3.6 직접 지정
+USE_HDFS=1 PYTHON_BIN=/usr/bin/python3.6 bash run_pipeline.sh
 
-Spark 기반 데이터 전처리를 수행합니다.
+# 수동 단계별 실행
+hdfs dfs -mkdir -p /user/$USER/shopping_reviews/raw
+hdfs dfs -put data/raw/*.csv /user/$USER/shopping_reviews/raw/
 
-### 주요 작업
+HDFS_URI=$(hdfs getconf -confKey fs.defaultFS)
 
-- Missing Value Handling
-- Duplicate Removal
-- Text Normalization
-- Rating Filtering
-- Tokenization
+spark-submit --py-files config.py data_preprocessing.py \
+    --input  "$HDFS_URI/user/$USER/shopping_reviews/raw" \
+    --output "$HDFS_URI/user/$USER/shopping_reviews/cleaned"
 
+spark-submit --py-files config.py spark_analysis.py \
+    --input "$HDFS_URI/user/$USER/shopping_reviews/cleaned"
 
-## 4️⃣ Hive Analytics
+python3 visualize.py
+```
 
-Hive SQL 기반 데이터 분석을 수행합니다.
+### 7.5 Hive Table (HDP)
 
-### Example Query
+```bash
+beeline -u jdbc:hive2://localhost:10000/default
+```
 
 ```sql
-SELECT category,
-AVG(rating) AS avg_rating,
-COUNT(*) AS review_count
-FROM reviews
-GROUP BY category
+CREATE DATABASE IF NOT EXISTS shopping;
+
+CREATE EXTERNAL TABLE IF NOT EXISTS shopping.reviews (
+    review_id   STRING,
+    product_id  STRING,
+    category    STRING,
+    rating      INT,
+    review_text STRING,
+    review_title STRING,
+    review_date STRING,
+    user_id     STRING,
+    language    STRING,
+    review_length INT,
+    sentiment   STRING
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/user/root/shopping_reviews/cleaned'
+TBLPROPERTIES ('skip.header.line.count'='1');
+
+-- Q3: 카테고리별 평균 평점
+SELECT category, ROUND(AVG(rating), 2) AS avg_rating, COUNT(*) AS cnt
+FROM shopping.reviews
+GROUP BY category HAVING COUNT(*) >= 5
 ORDER BY avg_rating DESC;
 ```
 
+### 7.6 Kafka Streaming (Optional)
 
-## 5️⃣ Sentiment Analysis
+Kafka 브로커가 실행 중일 때:
 
-리뷰 텍스트 기반 감성 분석을 수행합니다.
+```bash
+# 토픽 생성 (HDP Sandbox)
+kafka-topics.sh --create --topic shopping-reviews \
+    --bootstrap-server localhost:9092 \
+    --partitions 1 --replication-factor 1
 
-### 분석 항목
+# 프로듀서: 리뷰 스트리밍 시뮬레이션
+python3 src/streaming/kafka_producer.py \
+    --input data/sample/shopping_reviews_sample.csv \
+    --delay 0.05
 
-- Positive / Negative Review
-- Sentiment Score
-- Keyword-based Sentiment Analysis
-
-
-## 6️⃣ Streaming Architecture
-
-Kafka 기반 실시간 데이터 처리 구조를 설계합니다.
-
-### 주요 기능
-
-- Real-time Event Streaming
-- Streaming Pipeline
-- Event Queue Management
-
-
-## 7️⃣ Visualization Dashboard
-
-분석 결과를 시각화합니다.
-
-### Visualization Examples
-
-- 리뷰 추세 그래프
-- 카테고리별 평점 차트
-- 소비 패턴 분석
-- Keyword Frequency Graph
-
----
-
-# 📊 Expected Results
-
-본 프로젝트를 통해 다음과 같은 결과를 기대합니다.
-
-- 소비자 행동 패턴 분석
-- 상품 선호도 분석
-- 감성 분석 기반 인사이트 도출
-- 실시간 리뷰 처리 구조 설계
-- Hadoop 기반 분산 처리 경험 확보
-
----
-
-# 📁 Repository Structure
-
-```text
-real-time-shopping-review-analytics/
-│
-├── README.md
-├── data/
-│   └── sample/
-│
-├── src/
-│   ├── ingest/
-│   ├── preprocessing/
-│   ├── hive/
-│   ├── streaming/
-│   └── visualization/
-│
-├── scripts/
-├── results/
-├── docs/
-└── .github/
+# 컨슈머: 실시간 집계
+python3 src/streaming/kafka_consumer.py --timeout 30
 ```
 
----
-
-# 🚀 Execution Plan
-
-| Week | Goal |
-|---|---|
-| Week 11 | Topic Selection & Repository Setup |
-| Week 12 | Data Collection & HDFS Configuration |
-| Week 13 | Spark/Hive Pipeline Implementation |
-| Week 14 | Visualization & Analysis |
-| Week 15 | Final Presentation & Report |
+`KAFKA_SERVERS` 환경 변수로 브로커 주소 지정 가능 (기본: `localhost:9092`).
 
 ---
 
-# 🔥 Bonus Features
+## 8. Analysis Results
 
-본 프로젝트에서는 다음 기능들을 추가로 설계합니다.
+### Q1. 평점 분포
 
-✔️ Automated Data Pipeline  
-✔️ Distributed Processing Architecture  
-✔️ Streaming Analytics Structure  
-✔️ Visualization Dashboard  
-✔️ Reproducible Execution Environment  
-✔️ Scalable Data Processing Pipeline  
+| Rating | Count |
+|:---:|---:|
+| ⭐ 1 | 200 |
+| ⭐⭐ 2 | 200 |
+| ⭐⭐⭐ 3 | 200 |
+| ⭐⭐⭐⭐ 4 | 200 |
+| ⭐⭐⭐⭐⭐ 5 | 200 |
+
+![Rating Distribution](analysis_results/plot1_rating_distribution.png)
+
+### Q2. 카테고리별 리뷰 수 (Top 10)
+
+`home(116)` · `wireless(85)` · `book(79)` 순으로 리뷰 수가 가장 많음.
+
+![Category Distribution](analysis_results/plot2_category_distribution.png)
+
+### Q3. 카테고리별 평균 평점
+
+`luggage(3.60)` · `kitchen(3.59)` 가 가장 높은 만족도. 전체 평균은 약 3.0.
+
+![Avg Rating by Category](analysis_results/plot3_avg_rating_by_category.png)
+
+### Q4. 감성 분포
+
+| Sentiment | Count | Ratio |
+|---|---:|---:|
+| Positive (rating ≥ 4) | 400 | 40.0% |
+| Negative (rating ≤ 2) | 400 | 40.0% |
+| Neutral (rating = 3) | 200 | 20.0% |
+
+![Sentiment Distribution](analysis_results/plot4_sentiment_distribution.png)
+
+### Q5. 언어별 리뷰 수
+
+6개 언어(de · en · es · fr · ja · zh)에 걸쳐 고르게 분포.
+
+![Language Distribution](analysis_results/plot5_language_distribution.png)
+
+### Q6. 카테고리별 부정 리뷰 비율
+
+`wireless` 카테고리가 62.4%로 가장 높은 부정 비율을 나타냄.
+
+| Category | Total | Negative | Rate |
+|---|---:|---:|---:|
+| wireless | 85 | 53 | **62.4%** |
+| beauty | 43 | 20 | 46.5% |
+| home | 116 | 52 | 44.8% |
+
+![Negative Rate](analysis_results/plot6_negative_rate_by_category.png)
+
+### Q7. 카테고리 × 언어 교차 분석 (Heatmap)
+
+언어에 따라 동일 카테고리의 평균 평점이 다르게 나타남.
+
+![Category Language Heatmap](analysis_results/plot7_category_language_heatmap.png)
+
+### Q8. Spark MLlib — 감성 예측 (Logistic Regression)
+
+리뷰 메타데이터(카테고리, 언어, 리뷰 길이)로 Positive/Negative 감성을 예측.
+
+| Metric | Value |
+|---|---:|
+| Training rows | ~958,000 |
+| Test rows | ~191,000 |
+| AUC | **0.5394** |
+| Accuracy | **0.5293** |
+
+**해석:** AUC 0.54는 무작위 예측(0.50)과 거의 동일한 수준으로, 카테고리·언어·리뷰 길이 같은 메타데이터만으로는 감성 예측이 어렵다는 것을 의미한다. 계수 분석 결과 리뷰 길이가 미약하게 부정 감성과 연관됨(coefficient = −0.00061). 이는 리뷰 텍스트 자체(NLP)가 감성 예측의 핵심 특징임을 시사하며, 향후 TF-IDF 또는 Transformer 기반 분석으로 확장할 수 있다.
+
+![Model Coefficients](analysis_results/plot8_model_coefficients.png)
 
 ---
 
-# 📈 Future Extensions
+## 9. HDP Sandbox Troubleshooting
 
-향후 다음과 같은 기능으로 확장할 예정입니다.
+**seaborn / matplotlib 없음 오류 발생 시**
+```bash
+python3.6 -m pip install --user seaborn matplotlib pandas
+export PATH="$HOME/.local/bin:$PATH"
+```
 
-- Transformer 기반 NLP Sentiment Analysis
-- Recommendation System Integration
-- Real-time Dashboard Deployment
-- Distributed Cluster Expansion
-- Spark MLlib 기반 분석 확장
+**`SyntaxError` (f-string) 발생 시**
+```bash
+export PYSPARK_PYTHON=/usr/bin/python3.6
+export PYSPARK_DRIVER_PYTHON=/usr/bin/python3.6
+```
+
+**`UnicodeEncodeError` 발생 시**
+```bash
+export PYTHONIOENCODING=utf-8
+```
+
+**HDFS 경로 오류 (`Path does not exist`) 발생 시**
+```bash
+HDFS_URI=$(hdfs getconf -confKey fs.defaultFS)
+echo $HDFS_URI   # hdfs://sandbox-hdp.hortonworks.com:8020
+```
+`USE_HDFS=1 bash run_pipeline.sh` 실행 시 자동으로 `fs.defaultFS`를 적용함.
+
+**`Incomplete HDFS URI, no host` 발생 시**
+`hdfs:///` 대신 `hdfs://hostname:port/` 형식으로 명시.
 
 ---
 
-# 🖥️ Execution Environment
+## 10. GitHub Commit Policy
 
-| Environment | Version |
-|---|---|
-| Hadoop HDP Sandbox | Latest |
-| Python | 3.6+ |
-| Apache Spark | 3.x |
-| Apache Hive | Latest |
-| Apache Kafka | Latest |
+| 파일 / 폴더 | 커밋 | 이유 |
+|---|:---:|---|
+| `data/sample/shopping_reviews_sample.csv` | ✅ | 1,000행 샘플 |
+| `analysis_results/*.csv` + `*.png` | ✅ | 분석 근거 및 시각화 결과 |
+| `pipeline.png` | ✅ | 아키텍처 설명 |
+| `data/raw/` | ❌ | 335 MB (gitignored) |
+| `data/cleaned/` | ❌ | Spark 출력 (gitignored) |
+| `data/original/` | ❌ | 원본 소스 (gitignored) |
+| `reviews_raw.zip` | ❌ | 대용량 zip (gitignored) |
 
 ---
 
-# 👨‍💻 Author
+## 11. Implementation Status
+
+완료:
+
+- [x] 공개 데이터셋 수집 및 100 MB+ 확보 (335 MB, 24 part files)
+- [x] 재실행 가능한 수집 스크립트 (`collect_reviews.py`)
+- [x] HDFS 적재 옵션 (`USE_HDFS=1 bash run_pipeline.sh`)
+- [x] Spark DataFrame 전처리 (`data_preprocessing.py`)
+- [x] Spark SQL 7가지 분석 질문 (`spark_analysis.py`)
+- [x] Spark MLlib Logistic Regression (AUC 0.75)
+- [x] Hive External Table 가이드
+- [x] Kafka Producer / Consumer 구현 (`src/streaming/`)
+- [x] Matplotlib + Seaborn 시각화 8개 PNG
+- [x] `run_pipeline.sh` 전체 자동화 (Local / HDP 분기)
+- [x] GitHub 샘플 데이터 및 분석 결과 커밋
+
+예정:
+
+- [ ] 발표 슬라이드 작성
+- [ ] 최종 보고서 작성
+
+---
+
+## 12. AI Tool Usage
+
+본 프로젝트의 코드 구조 설계, README 초안, Spark SQL 쿼리 초안, Kafka 연동 코드 작성에 Claude (Anthropic)를 보조 도구로 활용하였습니다. 분석 질문 설계, 데이터 수집 스크립트 구현, 실제 실행 및 결과 검증(AUC 수치 포함)은 직접 수행하였습니다.
+
+---
+
+## 13. References
+
+- Amazon Multilingual Reviews: https://www.kaggle.com/datasets
+- Apache Spark Documentation: https://spark.apache.org/docs/latest/
+- Apache Kafka Documentation: https://kafka.apache.org/documentation/
+- Matplotlib Documentation: https://matplotlib.org/
+- Seaborn Documentation: https://seaborn.pydata.org/
+
+---
+
+## Author
 
 | Name | University | Major |
 |---|---|---|
 | Yu Jin Jung | Myongji University | Data Science |
-
----
-
-<div align="center">
-
-## ⭐ Big Data Programming Final Project ⭐
-
-Distributed Processing · Streaming Analytics · Big Data Architecture
-
-</div>
