@@ -123,7 +123,7 @@ real-time-shopping-review-analytics/
 ├── data/
 │   ├── README.md                      ← 스키마 및 재생성 가이드
 │   ├── sample/
-│   │   └── shopping_reviews_sample.csv  ← 1,000행 샘플 (커밋됨)
+│   │   └── shopping_reviews_sample.csv  ← 1,000행 샘플
 │   ├── raw/                           ← 335 MB, 24 files (GITIGNORED)
 │   └── cleaned/                       ← Spark 전처리 출력 (GITIGNORED)
 ├── src/
